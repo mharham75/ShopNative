@@ -1,10 +1,13 @@
 import { getProductById } from '@/services/productsApi';
+import useCartStore from '@/store/cartStore';
 import { useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
-import { Text, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 
 const ProductDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  const addItem = useCartStore((state) => state.addItem);
 
   const { isLoading, error, isError, data } = useQuery({
     queryKey: ['product', id],
@@ -21,14 +24,19 @@ const ProductDetail = () => {
     return <Text>{error.message}</Text>;
   }
 
-  console.log('data :: ', data);
-
   return (
     <View>
       <Text>{id}</Text>
       <Text>{data?.name}</Text>
       <Text>{data?.category}</Text>
       <Text>{data?.price}</Text>
+      <Pressable onPress={() => addItem(id)}>
+        <Text>Add To Cart</Text>
+      </Pressable>
+
+      <Pressable onPress={() => router.push('/cart')}>
+        <Text>Go To Cart</Text>
+      </Pressable>
     </View>
   );
 };
