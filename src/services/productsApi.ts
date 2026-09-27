@@ -24,3 +24,17 @@ export const getProducts = async (signal: AbortSignal): Promise<Product[]> => {
 
   return products;
 };
+
+export const getProductById = async (id: string): Promise<Product> => {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 2000);
+  });
+
+  const product = products.find((p) => p.id === id);
+
+  if (!product) {
+    throw new Error('No product found with this id');
+  }
+
+  return product;
+};

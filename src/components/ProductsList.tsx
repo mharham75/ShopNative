@@ -1,11 +1,5 @@
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Link } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { Product } from '../data/products';
 
 interface ProductsListPropTypes {
@@ -19,7 +13,7 @@ export const ProductsList = (props: ProductsListPropTypes) => {
 
   const filteredProducts = products?.filter((product: Product) => {
     if (searchTerm.length === 0 && selectedCategory.length === 0) {
-      return product;
+      return true;
     }
 
     if (searchTerm.length === 0 && selectedCategory) {
@@ -46,14 +40,12 @@ export const ProductsList = (props: ProductsListPropTypes) => {
       ) : (
         <>
           {filteredProducts.map((product: Product) => {
-            const { id, name, category, price, image } = product;
+            const { id, name, category, price } = product;
             return (
-              <View key={id} style={styles.product}>
+              <Link key={id} style={styles.product} href={`/product/${id}`}>
                 <Text>{name}</Text>
                 <Text>{price}</Text>
-                <Text>{category}</Text>
-                <Image source={{ uri: image, width: 20, height: 20 }} />
-              </View>
+              </Link>
             );
           })}
         </>
