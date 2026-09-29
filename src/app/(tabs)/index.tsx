@@ -1,6 +1,7 @@
 import CategoryList from '@/components/CategoryList';
 import { ProductsList } from '@/components/ProductsList';
 import { Searchbar } from '@/components/Searchbar';
+import { theme } from '@/constants/theme';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getProducts } from '@/services/productsApi';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -46,8 +47,13 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <Text>Shop Native</Text>
-      <Text>Everything you need, delivered to your door.</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Shop Native</Text>
+
+        <Text style={styles.subtitle}>
+          Everything you need, delivered to your door.
+        </Text>
+      </View>
 
       <Searchbar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
@@ -56,7 +62,9 @@ export default function Index() {
         onSelectCategory={handlePress}
       />
 
-      {isLoading && <ActivityIndicator color={'#ddd'} size={'large'} />}
+      {isLoading && (
+        <ActivityIndicator color={theme.colors.primary} size="large" />
+      )}
       {isError && <Text>{error.message}</Text>}
       {isError && (
         <Pressable onPress={() => refetch()}>
@@ -78,6 +86,24 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.xl,
+  },
+
+  header: {
+    marginBottom: theme.spacing.lg,
+  },
+
+  title: {
+    fontSize: theme.typography.title,
+    fontWeight: '700',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+
+  subtitle: {
+    fontSize: theme.typography.body,
+    color: theme.colors.textSecondary,
   },
 });

@@ -1,3 +1,6 @@
+import { theme } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 interface SearchbarPropTypes {
@@ -8,12 +11,22 @@ interface SearchbarPropTypes {
 export const Searchbar = (props: SearchbarPropTypes) => {
   const { searchTerm, onSearchChange } = props;
 
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+
   return (
-    <View>
+    <View style={[styles.container, isFocused && styles.containerFocused]}>
+      <Ionicons
+        name="search-outline"
+        size={20}
+        color={isFocused ? theme.colors.primary : theme.colors.muted}
+      />
       <TextInput
-        placeholder="search products..."
+        placeholder="Search products..."
+        placeholderTextColor={theme.colors.muted}
         value={searchTerm}
         onChangeText={onSearchChange}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         style={styles.textInput}
       />
     </View>
@@ -21,13 +34,23 @@ export const Searchbar = (props: SearchbarPropTypes) => {
 };
 
 const styles = StyleSheet.create({
-  textInput: {
-    padding: 8,
-    color: '#333',
-    backgroundColor: '#ddd',
-    borderColor: 'blue',
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    fontWeight: 800,
-    borderRadius: 8,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.lg,
+    paddingHorizontal: theme.spacing.md,
+  },
+  containerFocused: {
+    borderColor: theme.colors.primary,
+  },
+  textInput: {
+    flex: 1,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.sm,
+    fontSize: theme.typography.body,
+    color: theme.colors.text,
   },
 });
