@@ -15,6 +15,7 @@ const Cart = () => {
   const increaseQuantity = useCartStore((state) => state.increaseQuantity);
   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
   const clearCart = useCartStore((state) => state.clearCart);
+  const removeItem = useCartStore((state) => state.removeItem);
 
   const { data, isError, isLoading, error } = useQuery({
     queryKey: ['products'],
@@ -27,12 +28,15 @@ const Cart = () => {
     return {
       ...cartItem,
       productDetails,
-      subTotal: (productDetails?.price ?? 0) * cartItem.quantity,
+      isAvailable: !!productDetails,
+      subTotal: productDetails
+        ? productDetails.price * cartItem.quantity
+        : null,
     };
   });
 
   const totalCost = mapZustandToTanstackData.reduce(
-    (total, item) => total + item.subTotal,
+    (total, item) => total + (item.subTotal ?? 0),
     0
   );
 
@@ -68,20 +72,36 @@ const Cart = () => {
   return (
     <View>
       {mapZustandToTanstackData.map((item) => {
-        const { productId, subTotal, productDetails, quantity } = item;
+        const { productId, subTotal, productDetails, quantity, isAvailable } =
+          item;
+
         return (
-          <View key={productId}>
-            <Text>name : {productDetails?.name}</Text>
-            <Text>₹{productDetails?.price}</Text>
-            <Text>quantity : {quantity}</Text>
-            <Text>Subtotal : {subTotal}</Text>
-            <Pressable onPress={() => increaseQuantity(productId)}>
-              <Text>+</Text>
-            </Pressable>
-            <Pressable onPress={() => decreaseQuantity(productId)}>
-              <Text>-</Text>
-            </Pressable>
-          </View>
+          <>
+            {isAvailable ? (
+              <>
+                <Text>name : {productDetails?.name}</Text>
+                <Text>₹{productDetails?.price}</Text>
+                <Text>quantity : {quantity}</Text>
+                <Text>Subtotal : {subTotal}</Text>
+
+                <Pressable onPress={() => increaseQuantity(productId)}>
+                  <Text>+</Text>
+                </Pressable>
+
+                <Pressable onPress={() => decreaseQuantity(productId)}>
+                  <Text>-</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Text>Product unavailable</Text>
+                <Text>This product is no longer available.</Text>
+                <Pressable onPress={() => removeItem(productId)}>
+                  <Text>Remove Item</Text>
+                </Pressable>
+              </>
+            )}
+          </>
         );
       })}
       <View>

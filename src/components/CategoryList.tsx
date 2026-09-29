@@ -22,6 +22,9 @@ const CategoryList = (props: CategoryListPropTypes) => {
           <Text>{item}</Text>
         </Pressable>
       ))}
+      <Pressable onPress={() => onSelectCategory?.('')}>
+        <Text>Clear</Text>
+      </Pressable>
     </View>
   );
 };

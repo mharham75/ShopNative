@@ -1,6 +1,14 @@
 import { Product, products } from '@/data/products';
 
-export const getProducts = async (signal: AbortSignal): Promise<Product[]> => {
+type GetProductsParams = {
+  searchTerm?: string;
+  category?: string;
+};
+
+export const getProducts = async (
+  signal: AbortSignal,
+  params?: GetProductsParams
+): Promise<Product[]> => {
   await new Promise<void>((resolve, reject) => {
     let timerId: ReturnType<typeof setTimeout>;
 
@@ -19,10 +27,21 @@ export const getProducts = async (signal: AbortSignal): Promise<Product[]> => {
     timerId = setTimeout(() => {
       signal.removeEventListener('abort', handleAbort);
       resolve();
-    }, 4000);
+    }, 2000);
   });
 
-  return products;
+  let result = products;
+  if (params?.category) {
+    result = result.filter((item) => item.category === params.category);
+  }
+
+  if (params?.searchTerm) {
+    const normalisedSearch = params.searchTerm.toLowerCase();
+    result = result.filter((item) =>
+      item.name.toLowerCase().includes(normalisedSearch)
+    );
+  }
+  return result;
 };
 
 export const getProductById = async (id: string): Promise<Product> => {

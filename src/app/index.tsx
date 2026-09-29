@@ -1,8 +1,9 @@
 import CategoryList from '@/components/CategoryList';
 import { ProductsList } from '@/components/ProductsList';
 import { Searchbar } from '@/components/Searchbar';
+import { useDebounce } from '@/hooks/useDebounce';
 import { getProducts } from '@/services/productsApi';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -14,6 +15,7 @@ import {
 
 export default function Index() {
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const debouncedSearchTerm = useDebounce({ value: searchTerm, delay: 300 });
   const [selectedCategory, setSelectedCategory] = useState('');
 
   const {
@@ -22,9 +24,18 @@ export default function Index() {
     isLoading,
     error,
     refetch,
+    isFetching,
   } = useQuery({
-    queryKey: ['products'],
-    queryFn: ({ signal }) => getProducts(signal),
+    queryKey: [
+      'products',
+      { searchTerm: debouncedSearchTerm, category: selectedCategory },
+    ],
+    queryFn: ({ signal }) =>
+      getProducts(signal, {
+        searchTerm: debouncedSearchTerm,
+        category: selectedCategory,
+      }),
+    placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
@@ -52,12 +63,13 @@ export default function Index() {
           <Text>Retry</Text>
         </Pressable>
       )}
-      {!isLoading && !isError && (
-        <ProductsList
-          searchTerm={searchTerm}
-          selectedCategory={selectedCategory}
-          products={products || []}
-        />
+      {isFetching && !isLoading && <Text>Updating products...</Text>}
+      {!isLoading && !isError && products?.length === 0 && (
+        <Text>No products found</Text>
+      )}
+
+      {!isLoading && !isError && products?.length > 0 && (
+        <ProductsList products={products} />
       )}
     </View>
   );
@@ -67,6 +79,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
   },
 });
