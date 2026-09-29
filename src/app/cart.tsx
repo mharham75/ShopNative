@@ -1,5 +1,6 @@
 import { getProducts } from '@/services/productsApi';
 import useCartStore from '@/store/cartStore';
+import { CartItemWithDetails, mapCartItems } from '@/utils/cartUtils';
 import { useQuery } from '@tanstack/react-query';
 import {
   ActivityIndicator,
@@ -23,22 +24,7 @@ const Cart = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const mapZustandToTanstackData = cart.map((cartItem) => {
-    const productDetails = data?.find((item) => item.id === cartItem.productId);
-    return {
-      ...cartItem,
-      productDetails,
-      isAvailable: !!productDetails,
-      subTotal: productDetails
-        ? productDetails.price * cartItem.quantity
-        : null,
-    };
-  });
-
-  const totalCost = mapZustandToTanstackData.reduce(
-    (total, item) => total + (item.subTotal ?? 0),
-    0
-  );
+  const { cartItemsWithDetails, totalCost } = mapCartItems(data, cart);
 
   if (!hasHydrated) {
     return <Text>Loading Cart...</Text>;
@@ -71,12 +57,12 @@ const Cart = () => {
 
   return (
     <View>
-      {mapZustandToTanstackData.map((item) => {
+      {cartItemsWithDetails.map((item: CartItemWithDetails) => {
         const { productId, subTotal, productDetails, quantity, isAvailable } =
           item;
 
         return (
-          <>
+          <View key={productId}>
             {isAvailable ? (
               <>
                 <Text>name : {productDetails?.name}</Text>
@@ -101,7 +87,7 @@ const Cart = () => {
                 </Pressable>
               </>
             )}
-          </>
+          </View>
         );
       })}
       <View>
