@@ -1,5 +1,5 @@
 import CategoryList from '@/components/CategoryList';
-import { ProductsList } from '@/components/ProductsList';
+import { ProductCard } from '@/components/ProductCard';
 import { Searchbar } from '@/components/Searchbar';
 import { theme } from '@/constants/theme';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -8,6 +8,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Pressable,
   StyleSheet,
   Text,
@@ -25,7 +26,6 @@ export default function Index() {
     isLoading,
     error,
     refetch,
-    isFetching,
   } = useQuery({
     queryKey: [
       'products',
@@ -45,40 +45,55 @@ export default function Index() {
     setSelectedCategory(selectedItem);
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Shop Native</Text>
-
-        <Text style={styles.subtitle}>
-          Everything you need, delivered to your door.
-        </Text>
-      </View>
-
-      <Searchbar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-
-      <CategoryList
-        selectedCategory={selectedCategory}
-        onSelectCategory={handlePress}
-      />
-
-      {isLoading && (
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
         <ActivityIndicator color={theme.colors.primary} size="large" />
-      )}
-      {isError && <Text>{error.message}</Text>}
-      {isError && (
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.container}>
+        <Text>{error.message}</Text>
+
         <Pressable onPress={() => refetch()}>
           <Text>Retry</Text>
         </Pressable>
-      )}
-      {isFetching && !isLoading && <Text>Updating products...</Text>}
-      {!isLoading && !isError && products?.length === 0 && (
-        <Text>No products found</Text>
-      )}
+      </View>
+    );
+  }
 
-      {!isLoading && !isError && products?.length > 0 && (
-        <ProductsList products={products} />
-      )}
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={products}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <ProductCard product={item} />}
+        contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No products found</Text>
+        }
+        ListHeaderComponent={
+          <>
+            <View style={styles.header}>
+              <Text style={styles.title}>Shop Native</Text>
+
+              <Text style={styles.subtitle}>
+                Everything you need, delivered to your door.
+              </Text>
+            </View>
+
+            <Searchbar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+
+            <CategoryList
+              selectedCategory={selectedCategory}
+              onSelectCategory={handlePress}
+            />
+          </>
+        }
+      />
     </View>
   );
 }
@@ -105,5 +120,17 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: theme.typography.body,
     color: theme.colors.textSecondary,
+  },
+
+  list: {
+    gap: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
+  },
+
+  emptyText: {
+    textAlign: 'center',
+    marginTop: theme.spacing.xl,
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.body,
   },
 });

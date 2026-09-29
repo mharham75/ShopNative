@@ -1,47 +1,45 @@
 import { theme } from '@/constants/theme';
 import useCartStore from '@/store/cartStore';
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Product } from '../data/products';
 
-interface ProductsListPropTypes {
-  products: Product[];
+interface ProductCardPropTypes {
+  product: Product;
 }
 
-export const ProductsList = (props: ProductsListPropTypes) => {
-  const { products } = props;
+export const ProductCard = (props: ProductCardPropTypes) => {
+  const { product } = props;
 
   const addItem = useCartStore((state) => state.addItem);
 
+  const { id, name, price, image, category } = product;
+
   return (
-    <View style={styles.container}>
-      {products.map((product) => {
-        const { id, name, price } = product;
+    <View style={styles.card}>
+      <Image source={{ uri: image }} style={styles.image} />
+      <Link href={`/product/${id}`} style={styles.productLink}>
+        <View>
+          <Text style={styles.category}>{category}</Text>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.price}>₹{price}</Text>
+        </View>
+      </Link>
 
-        return (
-          <View key={id} style={styles.card}>
-            <Link href={`/product/${id}`} style={styles.productLink}>
-              <View>
-                <Text style={styles.name}>{name}</Text>
-                <Text style={styles.price}>₹{price}</Text>
-              </View>
-            </Link>
-
-            <Pressable onPress={() => addItem(id)} style={styles.addButton}>
-              <Text style={styles.addButtonText}>Add to Cart</Text>
-            </Pressable>
-          </View>
-        );
-      })}
+      <Pressable onPress={() => addItem(id)} style={styles.addButton}>
+        <Text style={styles.addButtonText}>Add to Cart</Text>
+      </Pressable>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    gap: theme.spacing.md,
+  image: {
+    width: '100%',
+    height: 180,
+    borderRadius: theme.radius.md,
+    marginBottom: theme.spacing.md,
   },
-
   card: {
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
@@ -52,6 +50,12 @@ const styles = StyleSheet.create({
 
   productLink: {
     marginBottom: theme.spacing.md,
+  },
+
+  category: {
+    fontSize: theme.typography.caption,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xs,
   },
 
   name: {
