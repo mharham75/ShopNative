@@ -1,3 +1,4 @@
+import { theme } from '@/constants/theme';
 import { getProducts } from '@/services/productsApi';
 import useCartStore from '@/store/cartStore';
 import { CartItemWithDetails, mapCartItems } from '@/utils/cartUtils';
@@ -37,7 +38,10 @@ const Cart = () => {
   if (cart.length === 0) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyText}>Your cart is empty</Text>
+        <Text style={styles.emptyTitle}>Your cart is empty</Text>
+        <Text style={styles.emptyMessage}>
+          Add some products to get started.
+        </Text>
       </View>
     );
   }
@@ -45,8 +49,8 @@ const Cart = () => {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text>Loading cart details...</Text>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={styles.stateMessage}>Loading cart details...</Text>
       </View>
     );
   }
@@ -54,52 +58,78 @@ const Cart = () => {
   if (isError) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Error: {error?.message}</Text>
+        <Text style={styles.errorTitle}>Unable to load cart</Text>
+        <Text style={styles.errorMessage}>{error.message}</Text>
       </View>
     );
   }
 
   return (
-    <View>
+    <View style={styles.container}>
       {cartItemsWithDetails.map((item: CartItemWithDetails) => {
         const { productId, subTotal, productDetails, quantity, isAvailable } =
           item;
 
         return (
-          <View key={productId}>
+          <View key={productId} style={styles.cartItem}>
             {isAvailable ? (
               <>
-                <Text>name : {productDetails?.name}</Text>
-                <Text>₹{productDetails?.price}</Text>
-                <Text>quantity : {quantity}</Text>
-                <Text>Subtotal : {subTotal}</Text>
+                <Text style={styles.productName}>{productDetails?.name}</Text>
 
-                <Pressable onPress={() => increaseQuantity(productId)}>
-                  <Text>+</Text>
-                </Pressable>
+                <Text style={styles.price}>₹{productDetails?.price}</Text>
 
-                <Pressable onPress={() => decreaseQuantity(productId)}>
-                  <Text>-</Text>
-                </Pressable>
+                <View style={styles.quantityRow}>
+                  <Pressable
+                    onPress={() => decreaseQuantity(productId)}
+                    style={styles.quantityButton}
+                  >
+                    <Text style={styles.quantityButtonText}>−</Text>
+                  </Pressable>
+
+                  <Text style={styles.quantity}>{quantity}</Text>
+
+                  <Pressable
+                    onPress={() => increaseQuantity(productId)}
+                    style={styles.quantityButton}
+                  >
+                    <Text style={styles.quantityButtonText}>+</Text>
+                  </Pressable>
+                </View>
+
+                <View style={styles.subtotalRow}>
+                  <Text style={styles.subtotalLabel}>Subtotal</Text>
+                  <Text style={styles.subtotalText}>₹{subTotal}</Text>
+                </View>
               </>
             ) : (
-              <>
-                <Text>Product unavailable</Text>
-                <Text>This product is no longer available.</Text>
-                <Pressable onPress={() => removeItem(productId)}>
-                  <Text>Remove Item</Text>
+              <View style={styles.unavailableContent}>
+                <Text style={styles.unavailableTitle}>Product unavailable</Text>
+
+                <Text style={styles.unavailableMessage}>
+                  This product is no longer available.
+                </Text>
+
+                <Pressable
+                  onPress={() => removeItem(productId)}
+                  style={styles.removeButton}
+                >
+                  <Text style={styles.removeButtonText}>Remove Item</Text>
                 </Pressable>
-              </>
+              </View>
             )}
           </View>
         );
       })}
-      <View>
-        <Text>Total Cost {totalCost}</Text>
+      <View style={styles.footer}>
+        <View style={styles.totalRow}>
+          <Text style={styles.totalLabel}>Total</Text>
+          <Text style={styles.totalAmount}>₹{totalCost}</Text>
+        </View>
+
+        <Pressable onPress={clearCart} style={styles.clearButton}>
+          <Text style={styles.clearButtonText}>Empty Cart</Text>
+        </Pressable>
       </View>
-      <Pressable onPress={() => clearCart()}>
-        <Text>Empty Cart</Text>
-      </Pressable>
     </View>
   );
 };
@@ -107,39 +137,189 @@ const Cart = () => {
 export default Cart;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.lg,
+  },
+
   center: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: theme.colors.background,
     alignItems: 'center',
-    padding: 20,
+    justifyContent: 'center',
+    padding: theme.spacing.xl,
   },
-  header: { fontSize: 24, fontWeight: 'bold', padding: 20, paddingBottom: 10 },
-  listContent: { paddingHorizontal: 20, paddingBottom: 20 },
+
+  emptyTitle: {
+    fontSize: theme.typography.heading,
+    fontWeight: '700',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+
+  emptyMessage: {
+    fontSize: theme.typography.body,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
+
+  stateMessage: {
+    marginTop: theme.spacing.md,
+    fontSize: theme.typography.body,
+    color: theme.colors.textSecondary,
+  },
+
+  errorTitle: {
+    fontSize: theme.typography.heading,
+    fontWeight: '700',
+    color: theme.colors.danger,
+    marginBottom: theme.spacing.xs,
+  },
+
+  errorMessage: {
+    fontSize: theme.typography.caption,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
+
   cartItem: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
   },
+
   productName: {
-    fontSize: 16,
+    fontSize: theme.typography.body,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
   },
-  priceBreakdown: { fontSize: 14, color: '#666' },
-  subtotalText: { fontWeight: '700', color: '#111' },
-  footer: {
+
+  price: {
+    fontSize: theme.typography.caption,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.md,
+  },
+
+  quantityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+  },
+
+  quantityButton: {
+    width: 36,
+    height: 36,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  quantityButtonText: {
+    fontSize: theme.typography.heading,
+    color: theme.colors.text,
+  },
+
+  quantity: {
+    minWidth: 24,
+    textAlign: 'center',
+    fontSize: theme.typography.body,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+
+  subtotalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    backgroundColor: '#fafafa',
   },
-  totalLabel: { fontSize: 18, fontWeight: '600', color: '#333' },
-  totalAmount: { fontSize: 22, fontWeight: 'bold', color: '#2ecc71' },
-  errorText: { color: 'red', fontSize: 16 },
-  emptyText: { fontSize: 16, color: '#888' },
+
+  subtotalLabel: {
+    fontSize: theme.typography.caption,
+    color: theme.colors.textSecondary,
+  },
+
+  subtotalText: {
+    fontSize: theme.typography.body,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+
+  unavailableContent: {
+    gap: theme.spacing.sm,
+  },
+
+  unavailableTitle: {
+    fontSize: theme.typography.body,
+    fontWeight: '600',
+    color: theme.colors.danger,
+  },
+
+  unavailableMessage: {
+    fontSize: theme.typography.caption,
+    color: theme.colors.textSecondary,
+  },
+
+  removeButton: {
+    alignSelf: 'flex-start',
+    marginTop: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.danger,
+    borderRadius: theme.radius.md,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+
+  removeButtonText: {
+    fontSize: theme.typography.caption,
+    fontWeight: '600',
+    color: theme.colors.danger,
+  },
+
+  footer: {
+    marginTop: theme.spacing.md,
+    paddingTop: theme.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+
+  totalLabel: {
+    fontSize: theme.typography.heading,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+
+  totalAmount: {
+    fontSize: theme.typography.title,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+
+  clearButton: {
+    borderWidth: 1,
+    borderColor: theme.colors.danger,
+    borderRadius: theme.radius.md,
+    paddingVertical: theme.spacing.md,
+    alignItems: 'center',
+  },
+
+  clearButtonText: {
+    fontSize: theme.typography.body,
+    fontWeight: '600',
+    color: theme.colors.danger,
+  },
 });
