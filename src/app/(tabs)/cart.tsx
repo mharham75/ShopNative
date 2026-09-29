@@ -1,11 +1,12 @@
 import { theme } from '@/constants/theme';
 import { getProducts } from '@/services/productsApi';
 import useCartStore from '@/store/cartStore';
-import { CartItemWithDetails, mapCartItems } from '@/utils/cartUtils';
+import { mapCartItems } from '@/utils/cartUtils';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Pressable,
   StyleSheet,
   Text,
@@ -66,70 +67,80 @@ const Cart = () => {
 
   return (
     <View style={styles.container}>
-      {cartItemsWithDetails.map((item: CartItemWithDetails) => {
-        const { productId, subTotal, productDetails, quantity, isAvailable } =
-          item;
+      <FlatList
+        data={cartItemsWithDetails}
+        keyExtractor={(item) => item.productId}
+        contentContainerStyle={{
+          padding: theme.spacing.lg,
+        }}
+        renderItem={({ item }) => {
+          const { productId, subTotal, productDetails, quantity, isAvailable } =
+            item;
+          return (
+            <View style={styles.cartItem}>
+              {isAvailable ? (
+                <>
+                  <Text style={styles.productName}>{productDetails?.name}</Text>
 
-        return (
-          <View key={productId} style={styles.cartItem}>
-            {isAvailable ? (
-              <>
-                <Text style={styles.productName}>{productDetails?.name}</Text>
+                  <Text style={styles.price}>₹{productDetails?.price}</Text>
 
-                <Text style={styles.price}>₹{productDetails?.price}</Text>
+                  <View style={styles.quantityRow}>
+                    <Pressable
+                      onPress={() => decreaseQuantity(productId)}
+                      style={styles.quantityButton}
+                    >
+                      <Text style={styles.quantityButtonText}>−</Text>
+                    </Pressable>
 
-                <View style={styles.quantityRow}>
+                    <Text style={styles.quantity}>{quantity}</Text>
+
+                    <Pressable
+                      onPress={() => increaseQuantity(productId)}
+                      style={styles.quantityButton}
+                    >
+                      <Text style={styles.quantityButtonText}>+</Text>
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.subtotalRow}>
+                    <Text style={styles.subtotalLabel}>Subtotal</Text>
+                    <Text style={styles.subtotalText}>₹{subTotal}</Text>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.unavailableContent}>
+                  <Text style={styles.unavailableTitle}>
+                    Product unavailable
+                  </Text>
+
+                  <Text style={styles.unavailableMessage}>
+                    This product is no longer available.
+                  </Text>
+
                   <Pressable
-                    onPress={() => decreaseQuantity(productId)}
-                    style={styles.quantityButton}
+                    onPress={() => removeItem(productId)}
+                    style={styles.removeButton}
                   >
-                    <Text style={styles.quantityButtonText}>−</Text>
-                  </Pressable>
-
-                  <Text style={styles.quantity}>{quantity}</Text>
-
-                  <Pressable
-                    onPress={() => increaseQuantity(productId)}
-                    style={styles.quantityButton}
-                  >
-                    <Text style={styles.quantityButtonText}>+</Text>
+                    <Text style={styles.removeButtonText}>Remove Item</Text>
                   </Pressable>
                 </View>
+              )}
+            </View>
+          );
+        }}
+        ListFooterComponent={
+          <View style={styles.footer}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalAmount}>₹{totalCost}</Text>
+            </View>
 
-                <View style={styles.subtotalRow}>
-                  <Text style={styles.subtotalLabel}>Subtotal</Text>
-                  <Text style={styles.subtotalText}>₹{subTotal}</Text>
-                </View>
-              </>
-            ) : (
-              <View style={styles.unavailableContent}>
-                <Text style={styles.unavailableTitle}>Product unavailable</Text>
-
-                <Text style={styles.unavailableMessage}>
-                  This product is no longer available.
-                </Text>
-
-                <Pressable
-                  onPress={() => removeItem(productId)}
-                  style={styles.removeButton}
-                >
-                  <Text style={styles.removeButtonText}>Remove Item</Text>
-                </Pressable>
-              </View>
-            )}
+            <Pressable onPress={clearCart} style={styles.clearButton}>
+              <Text style={styles.clearButtonText}>Empty Cart</Text>
+            </Pressable>
           </View>
-        );
-      })}
-      <View style={styles.footer}>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalAmount}>₹{totalCost}</Text>
-        </View>
-
-        <Pressable onPress={clearCart} style={styles.clearButton}>
-          <Text style={styles.clearButtonText}>Empty Cart</Text>
-        </Pressable>
-      </View>
+        }
+      />
     </View>
   );
 };
@@ -140,7 +151,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    padding: theme.spacing.lg,
   },
 
   center: {
