@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -22,6 +23,12 @@ const ProductDetail = () => {
     staleTime: 5 * 60 * 1000,
     gcTime: 40 * 60 * 1000,
   });
+
+  const handleAdd = (id: string) => {
+    addItem(id);
+
+    Alert.alert('Added to Cart', `${data?.name} has been added to your cart.`);
+  };
 
   if (isLoading) {
     return (
@@ -50,7 +57,7 @@ const ProductDetail = () => {
 
         <Text style={styles.price}>₹{data?.price}</Text>
 
-        <Pressable onPress={() => addItem(id)} style={styles.addButton}>
+        <Pressable onPress={() => handleAdd(id)} style={styles.addButton}>
           <Text style={styles.addButtonText}>Add to Cart</Text>
         </Pressable>
 

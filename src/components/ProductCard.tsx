@@ -1,7 +1,7 @@
 import { theme } from '@/constants/theme';
 import useCartStore from '@/store/cartStore';
 import { Link } from 'expo-router';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Product } from '../data/products';
 
 interface ProductCardPropTypes {
@@ -15,6 +15,15 @@ export const ProductCard = (props: ProductCardPropTypes) => {
 
   const { id, name, price, image, category } = product;
 
+  const handleAdd = (id: string) => {
+    addItem(id);
+
+    Alert.alert(
+      'Added to Cart',
+      `${product?.name} has been added to your cart.`
+    );
+  };
+
   return (
     <View style={styles.card}>
       <Image source={{ uri: image }} style={styles.image} />
@@ -26,7 +35,7 @@ export const ProductCard = (props: ProductCardPropTypes) => {
         </View>
       </Link>
 
-      <Pressable onPress={() => addItem(id)} style={styles.addButton}>
+      <Pressable onPress={() => handleAdd(id)} style={styles.addButton}>
         <Text style={styles.addButtonText}>Add to Cart</Text>
       </Pressable>
     </View>
