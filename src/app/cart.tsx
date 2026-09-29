@@ -10,9 +10,11 @@ import {
 } from 'react-native';
 
 const Cart = () => {
-  const { cart, increaseQuantity, decreaseQuantity } = useCartStore(
-    (state) => state
-  );
+  const cart = useCartStore((state) => state.cart);
+  const hasHydrated = useCartStore((state) => state.hasHydrated);
+  const increaseQuantity = useCartStore((state) => state.increaseQuantity);
+  const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const { data, isError, isLoading, error } = useQuery({
     queryKey: ['products'],
@@ -33,6 +35,10 @@ const Cart = () => {
     (total, item) => total + item.subTotal,
     0
   );
+
+  if (!hasHydrated) {
+    return <Text>Loading Cart...</Text>;
+  }
 
   if (cart.length === 0) {
     return (
@@ -81,6 +87,9 @@ const Cart = () => {
       <View>
         <Text>Total Cost {totalCost}</Text>
       </View>
+      <Pressable onPress={() => clearCart()}>
+        <Text>Empty Cart</Text>
+      </Pressable>
     </View>
   );
 };
