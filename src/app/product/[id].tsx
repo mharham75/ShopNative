@@ -34,7 +34,7 @@ const ProductDetail = () => {
         <Text>Add To Cart</Text>
       </Pressable>
 
-      <Pressable onPress={() => router.push('/cart')}>
+      <Pressable onPress={() => router.navigate('/cart')}>
         <Text>Go To Cart</Text>
       </Pressable>
     </View>

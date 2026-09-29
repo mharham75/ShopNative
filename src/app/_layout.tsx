@@ -15,7 +15,7 @@ export default function RootLayout() {
         screenOptions={{
           headerRight: () => (
             <Pressable
-              onPress={() => router.push('/cart')}
+              onPress={() => router.navigate('/cart')}
               style={styles.headerRight}
             >
               <Text>🛒 </Text>
