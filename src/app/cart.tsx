@@ -2,6 +2,7 @@ import { getProducts } from '@/services/productsApi';
 import useCartStore from '@/store/cartStore';
 import { CartItemWithDetails, mapCartItems } from '@/utils/cartUtils';
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -24,7 +25,10 @@ const Cart = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { cartItemsWithDetails, totalCost } = mapCartItems(data, cart);
+  const { cartItemsWithDetails, totalCost } = useMemo(
+    () => mapCartItems(data, cart),
+    [data, cart]
+  );
 
   if (!hasHydrated) {
     return <Text>Loading Cart...</Text>;
